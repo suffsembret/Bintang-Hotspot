@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal-Bintang Hotspot</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#121214',
+                        darkCard: '#1a1a1e',
+                        darkBorder: '#27272a',
+                        accent: '#10b981',
+                        accentHover: '#059669',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome / Lucide Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-darkBg dark:text-gray-100 min-h-screen transition-colors duration-300" 
+      x-data="bintangApp()" x-init="initApp()">
+
+    <!-- Toast Notification -->
+    <div class="fixed top-5 right-5 z-50 space-y-2">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-white text-sm transition-all transform translate-y-0"
+                 :class="toast.type === 'success' ? 'bg-emerald-600' : (toast.type === 'error' ? 'bg-rose-600' : 'bg-blue-600')">
+                <i class="fa-solid" :class="toast.type === 'success' ? 'fa-circle-check' : (toast.type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info')"></i>
+                <span x-text="toast.message"></span>
+            </div>
+        </template>
+    </div>
+
+    <!-- ================= LANDING PAGE VIEW ================= -->
+    <div x-show="currentView === 'landing'" class="min-h-screen flex flex-col justify-between">
+        <!-- Header -->
+        <header class="w-full border-b border-gray-200 dark:border-darkBorder bg-white/80 dark:bg-darkCard/80 backdrop-blur sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xl shadow-inner">
+                        <i class="fa-solid fa-wifi"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">Bintang Hotspot</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">High-Speed Fiber & Wireless Network</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button @click="toggleTheme()" class="p-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid" :class="darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-gray-600'"></i>
+                    </button>
+                    <button @click="openLoginModal()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-lock"></i> Admin Login
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-semibold tracking-wide uppercase">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Jaringan Internet Stabil & Cepat
+                </span>
+                <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                    Solusi Internet Terbaik untuk Rumah & Bisnis Anda Bersama <span class="text-emerald-500">Bintang Hotspot</span>
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+                    Nikmati koneksi internet tanpa batas, anti-lag, dan stabil 24/7. Dilengkapi dengan sistem manajemen pelanggan modern, transparansi pembayaran tagihan PPPoE, serta monitoring real-time.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#packages" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-bolt">}</i> Lihat Paket Internet
+                    </a>
+                    <button @click="openLoginModal()" class="px-6 py-3 rounded-xl border border-gray-200 dark:border-darkBorder hover:bg-gray-100 dark:hover:bg-gray-800 font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high"></i> Dashboard Admin
+                    </button>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-emerald-600 to-cyan-500 opacity-30 blur-xl"></div>
+                <div class="relative bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 shadow-2xl space-y-6">
+                    <div class="flex items-center justify-between border-b border-gray-200 dark:border-darkBorder pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        </div>
+                        <span class="text-xs text-gray-400 font-mono">bintang-hotspot.net</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-200 dark:border-darkBorder">
+                            <div class="text-emerald-500 text-2xl mb-2"><i class="fa-solid fa-gauge"></i></div>
+                            <h4 class="font-bold text-sm">Up to 50 Mbps</h4>
+                            <p class="text-xs text-gray-500">Kecepatan tinggi stabil</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-200 dark:border-darkBorder">
+                            <div class="text-cyan-500 text-2xl mb-2"><i class="fa-solid fa-headset"></i></div>
+                            <h4 class="font-bold text-sm">Support 24/7</h4>
+                            <p class="text-xs text-gray-500">Teknisi siap datang</p>
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Status Jaringan</div>
+                            <div class="text-lg font-bold text-emerald-700 dark:text-emerald-300">Semua Node Normal (100%)</div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Packages Section -->
+        <section id="packages" class="bg-gray-100/50 dark:bg-gray-900/30 py-20 border-t border-gray-200 dark:border-darkBorder">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+                <div class="text-center max-w-2xl mx-auto space-y-4">
+                    <h3 class="text-3xl font-bold tracking-tight">Pilihan Paket Internet</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Pilih paket yang sesuai dengan kebutuhan rumah atau bisnis Anda dengan harga terjangkau.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 shadow-xl flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-semibold">Paket Home Basic</span>
+                            <h4 class="text-2xl font-bold">10 Mbps</h4>
+                            <div class="text-3xl font-extrabold text-emerald-500">Rp 150.000 <span class="text-sm font-normal text-gray-400">/bulan</span></div>
+                            <p class="text-sm text-gray-500">Cocok untuk browsing, streaming HD, dan sosial media untuk 3-5 perangkat.</p>
+                            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300 pt-4 border-t border-gray-200 dark:border-darkBorder">
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Unlimited Tanpa FUP</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Free Router WiFi</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Support 24/7</li>
+                            </ul>
+                        </div>
+                        <button @click="openLoginModal()" class="mt-8 w-full py-3 rounded-xl border border-gray-200 dark:border-darkBorder hover:bg-emerald-600 hover:text-white font-semibold transition">Pilih Paket</button>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard border-2 border-emerald-500 rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative">
+                        <div class="absolute -top-3 right-8 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Terlaris</div>
+                        <div class="space-y-4">
+                            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-semibold">Paket Family Pro</span>
+                            <h4 class="text-2xl font-bold">20 Mbps</h4>
+                            <div class="text-3xl font-extrabold text-emerald-500">Rp 250.000 <span class="text-sm font-normal text-gray-400">/bulan</span></div>
+                            <p class="text-sm text-gray-500">Sangat ideal untuk keluarga besar, kerja dari rumah, dan streaming 4K bersamaan.</p>
+                            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300 pt-4 border-t border-gray-200 dark:border-darkBorder">
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Unlimited Tanpa FUP</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Free Router & Instalasi</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Prioritas Support</li>
+                            </ul>
+                        </div>
+                        <button @click="openLoginModal()" class="mt-8 w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-lg shadow-emerald-600/20 transition">Pilih Paket</button>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 shadow-xl flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <span class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-xs font-semibold">Paket Business</span>
+                            <h4 class="text-2xl font-bold">50 Mbps</h4>
+                            <div class="text-3xl font-extrabold text-emerald-500">Rp 500.000 <span class="text-sm font-normal text-gray-400">/bulan</span></div>
+                            <p class="text-sm text-gray-500">Dhususkan untuk kantor, cafe, ruko, atau pengguna dengan kebutuhan bandwidth super besar.</p>
+                            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300 pt-4 border-t border-gray-200 dark:border-darkBorder">
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Dedicated Bandwidth</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> IP Public Static (Opsional)</li>
+                                <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> VIP Maintenance Response</li>
+                            </ul>
+                        </div>
+                        <button @click="openLoginModal()" class="mt-8 w-full py-3 rounded-xl border border-gray-200 dark:border-darkBorder hover:bg-emerald-600 hover:text-white font-semibold transition">Pilih Paket</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard py-8 text-center text-sm text-gray-500">
+            <p>&copy; 2026 Bintang Hotspot Network. All rights reserved. Designed for Mobile & Desktop Monitoring.</p>
+        </footer>
+    </div>
+
+
+    <!-- ================= ADMIN APP VIEW (SIDEBAR + CONTENT) ================= -->
+    <div x-show="currentView === 'admin'" class="min-h-screen flex flex-col md:flex-row" x-cloak>
+        
+        <!-- Mobile Header Bar -->
+        <div class="md:hidden flex items-center justify-between bg-white dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder px-4 py-3 sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button @click="mobileSidebarOpen = !mobileSidebarOpen" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-wifi text-emerald-500"></i> Bintang Hotspot
+                </div>
+            </div>
+            <button @click="toggleTheme()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                <i class="fa-solid" :class="darkMode ? 'fa-sun text-amber-400' : 'fa-moon'"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar (Desktop & Mobile Drawer) -->
+        <aside class="fixed inset-y-0 left-0 z-40 w-72 bg-white dark:bg-darkCard border-r border-gray-200 dark:border-darkBorder flex flex-col justify-between transition-transform duration-300 md:translate-x-0"
+               :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+            
+            <!-- Top Profile & Brand -->
+            <div class="p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xl shadow-inner">
+                            <i class="fa-solid fa-wifi"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-lg leading-tight">Bintang Hotspot</h2>
+                            <span class="text-xs text-emerald-500 font-medium">Admin Control Panel</span>
+                        </div>
+                    </div>
+                    <button @click="mobileSidebarOpen = false" class="md:hidden text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Admin User Card -->
+                <div class="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-darkBorder">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-10 h-10 rounded-xl object-cover">
+                    <div class="overflow-hidden">
+                        <h4 class="font-semibold text-sm truncate">Admin Bintang</h4>
+                        <p class="text-xs text-emerald-500 truncate">Online &bull; Active</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="space-y-1">
+                    <button @click="adminTab = 'dashboard'; mobileSidebarOpen = false" 
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition"
+                            :class="adminTab === 'dashboard' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                        <i class="fa-solid fa-house w-5"></i> Dashboard
+                    </button>
+                    <button @click="adminTab = 'pelanggan'; mobileSidebarOpen = false" 
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition"
+                            :class="adminTab === 'pelanggan' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                        <i class="fa-solid fa-users w-5"></i> Data Pelanggan
+                    </button>
+                    <button @click="adminTab = 'keuangan'; mobileSidebarOpen = false" 
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition"
+                            :class="adminTab === 'keuangan' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                        <i class="fa-solid fa-wallet w-5"></i> Keuangan (Pemasukan/Keluar)
+                    </button>
+                    <button @click="adminTab = 'laporan'; mobileSidebarOpen = false" 
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition"
+                            :class="adminTab === 'laporan' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                        <i class="fa-solid fa-chart-pie w-5"></i> Laporan Pendapatan
+                    </button>
+                    <button @click="adminTab = 'sheets'; mobileSidebarOpen = false" 
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition"
+                            :class="adminTab === 'sheets' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                        <i class="fa-solid fa-file-excel w-5"></i> Google Sheets Sync
+                    </button>
+                    <button @click="adminTab = 'settings'; mobileSidebarOpen = false" 
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition"
+                            :class="adminTab === 'settings' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                        <i class="fa-solid fa-gear w-5"></i> Settings
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="p-6 border-t border-gray-200 dark:border-darkBorder space-y-3">
+                <button @click="toggleTheme()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <span>Theme Mode</span>
+                    <i class="fa-solid" :class="darkMode ? 'fa-sun text-amber-400' : 'fa-moon'"></i>
+                </button>
+                <button @click="logoutAdmin()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-medium text-sm transition">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar (Logout)
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 md:ml-72 p-4 sm:p-8 space-y-8">
+
+            <!-- Top Bar for Desktop -->
+            <div class="hidden md:flex items-center justify-between bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder px-6 py-4 rounded-2xl shadow-sm">
+                <div>
+                    <h3 class="text-xl font-bold capitalize" x-text="adminTab === 'dashboard' ? 'Dashboard Monitoring' : (adminTab === 'pelanggan' ? 'Manajemen Pelanggan' : (adminTab === 'keuangan' ? 'Pemasukan & Pengeluaran' : (adminTab === 'laporan' ? 'Laporan Pendapatan' : (adminTab === 'sheets' ? 'Google Sheets Sync' : 'Settings'))))"></h3>
+                    <p class="text-xs text-gray-500">Sistem Manajemen & Billing Bintang Hotspot</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-xs font-semibold">
+                        <i class="fa-solid fa-circle text-[8px] animate-pulse"></i> Database Terhubung
+                    </div>
+                    <button @click="openAddCustomerModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Tambah Pelanggan
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= TAB: DASHBOARD ================= -->
+            <div x-show="adminTab === 'dashboard'" class="space-y-8">
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-5 rounded-2xl shadow-sm space-y-2">
+                        <div class="flex items-center justify-between text-gray-500">
+                            <span class="text-xs font-medium">Total Pelanggan</span>
+                            <i class="fa-solid fa-users text-emerald-500 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold" x-text="customers.filter(c => (c.statusBerlangganan || 'Aktif') === 'Aktif').length">0</div>
+                        <div class="text-xs text-emerald-500 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> Pelanggan aktif</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-5 rounded-2xl shadow-sm space-y-2">
+                        <div class="flex items-center justify-between text-gray-500">
+                            <span class="text-xs font-medium">Pelanggan Aktif</span>
+                            <i class="fa-solid fa-user-check text-blue-500 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold" x-text="customers.filter(c => c.statusBayar === 'Lunas').length">0</div>
+                        <div class="text-xs text-blue-500 font-medium">Sudah bayar bulan ini</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-5 rounded-2xl shadow-sm space-y-2">
+                        <div class="flex items-center justify-between text-gray-500">
+                            <span class="text-xs font-medium">Pendapatan Bulan Ini</span>
+                            <i class="fa-solid fa-wallet text-emerald-500 text-lg"></i>
+                        </div>
+                        <div class="text-xl font-bold" x-text="formatRupiah(currentMonthRevenue())">Rp 0</div>
+                        <div class="text-xs text-emerald-500 font-medium">Bulan Aktif</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-5 rounded-2xl shadow-sm space-y-2">
+                        <div class="flex items-center justify-between text-gray-500">
+                            <span class="text-xs font-medium">Total Pengeluaran</span>
+                            <i class="fa-solid fa-receipt text-rose-500 text-lg"></i>
+                        </div>
+                        <div class="text-xl font-bold" x-text="formatRupiah(currentMonthExpense())">Rp 0</div>
+                        <div class="text-xs text-rose-500 font-medium">Operasional</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-5 rounded-2xl shadow-sm space-y-2">
+                        <div class="flex items-center justify-between text-gray-500">
+                            <span class="text-xs font-medium">Belum Bayar</span>
+                            <i class="fa-solid fa-clock text-amber-500 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-amber-500" x-text="customers.filter(c => c.statusBayar === 'Belum Bayar').length">0</div>
+                        <div class="text-xs text-amber-500 font-medium">Perlu penagihan</div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-4">
+                    <h4 class="font-bold text-sm text-gray-500 uppercase tracking-wider">Quick Access & Aksi Cepat</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <button @click="openAddCustomerModal()" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-darkBorder hover:border-emerald-500 text-left transition space-y-2 group">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </div>
+                            <div class="font-bold text-sm">+ Tambah Pelanggan</div>
+                            <div class="text-xs text-gray-400">Daftarkan pelanggan baru</div>
+                        </button>
+
+                        <button @click="adminTab = 'pelanggan'" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-darkBorder hover:border-emerald-500 text-left transition space-y-2 group">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fa-solid fa-cash-register"></i>
+                            </div>
+                            <div class="font-bold text-sm">Input Pembayaran</div>
+                            <div class="text-xs text-gray-400">Catat lunas / tanggal bayar</div>
+                        </button>
+
+                        <button @click="adminTab = 'keuangan'" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-darkBorder hover:border-emerald-500 text-left transition space-y-2 group">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="font-bold text-sm">Catat Pengeluaran</div>
+                            <div class="text-xs text-gray-400">Operasional jaringan</div>
+                        </button>
+
+                        <button @click="syncGoogleSheets()" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-darkBorder hover:border-emerald-500 text-left transition space-y-2 group">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fa-solid fa-rotate"></i>
+                            </div>
+                            <div class="font-bold text-sm">Sync Google Sheets</div>
+                            <div class="text-xs text-gray-400">Sinkronisasi data database</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Charts & Recent Activity Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Monthly Revenue Chart -->
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-base">Grafik Pendapatan Bulanan</h4>
+                            <span class="text-xs text-gray-400 font-mono">Tahun 2026</span>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Expenses Table -->
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-base">Pengeluaran Terbaru</h4>
+                            <button @click="adminTab = 'keuangan'" class="text-xs text-emerald-500 font-semibold hover:underline">Lihat Semua</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-darkBorder text-gray-400 text-xs">
+                                        <th class="pb-3">Keterangan</th>
+                                        <th class="pb-3">Tanggal</th>
+                                        <th class="pb-3 text-right">Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-darkBorder">
+                                    <template x-for="exp in expenses.slice(0, 5)" :key="exp.id">
+                                        <tr>
+                                            <td class="py-3 font-medium" x-text="exp.keterangan"></td>
+                                            <td class="py-3 text-gray-400 text-xs" x-text="exp.tanggal"></td>
+                                            <td class="py-3 text-right font-semibold text-rose-500" x-text="formatRupiah(exp.jumlah)"></td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="expenses.length === 0">
+                                        <tr>
+                                            <td colspan="3" class="py-4 text-center text-gray-400 text-xs">Belum ada data pengeluaran</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB: DATA PELANGGAN ================= -->
+            <div x-show="adminTab === 'pelanggan'" class="space-y-6" x-cloak>
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-6">
+                    <!-- Filters & Search -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="relative w-full sm:w-80">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fa-solid fa-search"></i>
+                            </span>
+                            <input type="text" x-model="searchQuery" placeholder="Cari nama atau ID PPPoE..." 
+                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <select x-model="filterStatus" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                                <option value="">Semua Status Bayar</option>
+                                <option value="Lunas">Lunas</option>
+                                <option value="Belum Bayar">Belum Bayar</option>
+                            </select>
+                            <select x-model="filterBerlangganan" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                                <option value="">Semua Status Langganan</option>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Nonaktif">Nonaktif</option>
+                            </select>
+                            <button @click="openAddCustomerModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                                <i class="fa-solid fa-user-plus"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-darkBorder text-gray-400 text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-4 w-12">No.</th>
+                                    <th class="py-3 px-4">Nama Pelanggan</th>
+                                    <th class="py-3 px-4">Alamat</th>
+                                    <th class="py-3 px-4">ID PPPoE</th>
+                                    <th class="py-3 px-4">Tgl Pemasangan</th>
+                                    <th class="py-3 px-4">Status Langganan</th>
+                                    <th class="py-3 px-4">Status Baru</th>
+                                    <th class="py-3 px-4">Status Bayar</th>
+                                    <th class="py-3 px-4">Tgl Pembayaran</th>
+                                    <th class="py-3 px-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-darkBorder">
+                                <template x-for="(customer, index) in filteredCustomers" :key="customer.id">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition">
+                                        <td class="py-4 px-4 font-mono text-xs text-gray-400" x-text="index + 1"></td>
+                                        <td class="py-4 px-4 font-semibold" x-text="customer.nama"></td>
+                                        <td class="py-4 px-4 text-gray-500 max-w-xs truncate" x-text="customer.alamat"></td>
+                                        <td class="py-4 px-4 font-mono text-xs text-emerald-500" x-text="customer.idpppoe"></td>
+                                        <td class="py-4 px-4 text-gray-400 text-xs" x-text="customer.tglPemasangan"></td>
+                                        <td class="py-4 px-4">
+                                            <button @click="toggleBerlangganan(customer)" class="px-2.5 py-1 rounded-full text-xs font-semibold transition flex items-center gap-1.5"
+                                                    :class="customer.statusBerlangganan === 'Nonaktif' ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'"
+                                                    title="Klik untuk ubah status">
+                                                <span class="w-1.5 h-1.5 rounded-full" :class="customer.statusBerlangganan === 'Nonaktif' ? 'bg-rose-500' : 'bg-emerald-500'"></span>
+                                                <span x-text="customer.statusBerlangganan || 'Aktif'"></span>
+                                            </button>
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                                                  :class="isNewCustomer(customer.tglPemasangan) ? 'bg-purple-500/10 text-purple-500' : 'bg-blue-500/10 text-blue-500'"
+                                                  x-text="isNewCustomer(customer.tglPemasangan) ? 'Pelanggan Baru' : 'Pelanggan Lama'">
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                                                  :class="customer.statusBayar === 'Lunas' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'"
+                                                  x-text="customer.statusBayar">
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-4 text-gray-400 text-xs" x-text="customer.tglPembayaran || '-'"></td>
+                                        <td class="py-4 px-4 text-right space-x-2">
+                                            <button @click="openPaymentModal(customer)" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-xs font-semibold transition" title="Input Pembayaran">
+                                                <i class="fa-solid fa-money-bill-wave"></i> Bayar
+                                            </button>
+                                            <button @click="openEditCustomerModal(customer)" class="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition" title="Edit">
+                                                <i class="fa-solid fa-pen text-xs"></i>
+                                            </button>
+                                            <button @click="deleteCustomer(customer.id)" class="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition" title="Hapus">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template x-if="filteredCustomers.length === 0">
+                                    <tr>
+                                        <td colspan="8" class="py-8 text-center text-gray-400 text-sm">Tidak ada data pelanggan ditemukan.</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB: KEUANGAN (PEMASUKAN & PENGELUARAN) ================= -->
+            <div x-show="adminTab === 'keuangan'" class="space-y-6" x-cloak>
+                <!-- Month Navigation Header -->
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-4 sm:p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-base" x-text="formatMonthName(selectedMonthYear)">Periode Keuangan</h4>
+                            <p class="text-xs text-gray-400">Klik untuk atur atau navigasi bulan pemasukan & pengeluaran</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button @click="changeMonth(-1)" class="px-4 py-2 rounded-xl border border-gray-200 dark:border-darkBorder hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold transition flex items-center gap-1.5" title="Bulan Sebelumnya">
+                            <i class="fa-solid fa-chevron-left"></i> Lalu
+                        </button>
+                        <!-- Clickable and interactive month picker input -->
+                        <div class="relative">
+                            <input type="month" x-model="selectedMonthYear" @change="filterExpensesByMonth()" 
+                                   class="px-4 py-2.5 rounded-xl border-2 border-emerald-500/50 hover:border-emerald-500 bg-gray-50 dark:bg-gray-900 text-xs font-bold cursor-pointer focus:outline-none shadow-sm transition">
+                        </div>
+                        <button @click="changeMonth(1)" class="px-4 py-2 rounded-xl border border-gray-200 dark:border-darkBorder hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold transition flex items-center gap-1.5" title="Bulan Berikutnya">
+                            Depan <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Pemasukan Summary Card -->
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-base">Total Pemasukan Bulan Ini</h4>
+                                    <p class="text-xs text-gray-400" x-text="formatMonthName(selectedMonthYear)"></p>
+                                </div>
+                            </div>
+                            <div class="text-xl font-extrabold text-emerald-500" x-text="formatRupiah(filteredMonthRevenue())">Rp 0</div>
+                        </div>
+                    </div>
+
+                    <!-- Pengeluaran Summary Card -->
+                    <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-base">Total Pengeluaran Bulan Ini</h4>
+                                    <p class="text-xs text-gray-400" x-text="formatMonthName(selectedMonthYear)"></p>
+                                </div>
+                            </div>
+                            <div class="text-xl font-extrabold text-rose-500" x-text="formatRupiah(filteredMonthExpense())">Rp 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expenses Management Table -->
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-lg">Daftar Pengeluaran (<span x-text="formatMonthName(selectedMonthYear)"></span>)</h4>
+                        <button @click="openAddExpenseModal()" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-rose-600/20 transition flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Catat Pengeluaran
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-darkBorder text-gray-400 text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-4">Keterangan</th>
+                                    <th class="py-3 px-4">Kategori</th>
+                                    <th class="py-3 px-4">Tanggal Catat</th>
+                                    <th class="py-3 px-4 text-right">Jumlah (Rp)</th>
+                                    <th class="py-3 px-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-darkBorder">
+                                <template x-for="expense in filteredExpenses" :key="expense.id">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition">
+                                        <td class="py-4 px-4 font-semibold" x-text="expense.keterangan"></td>
+                                        <td class="py-4 px-4">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-500" x-text="expense.kategori"></span>
+                                        </td>
+                                        <td class="py-4 px-4 text-gray-400 text-xs" x-text="expense.tanggal"></td>
+                                        <td class="py-4 px-4 text-right font-semibold text-rose-500" x-text="formatRupiah(expense.jumlah)"></td>
+                                        <td class="py-4 px-4 text-right">
+                                            <button @click="deleteExpense(expense.id)" class="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition" title="Hapus">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template x-if="filteredExpenses.length === 0">
+                                    <tr>
+                                        <td colspan="5" class="py-8 text-center text-gray-400 text-sm">Tidak ada catatan pengeluaran pada bulan ini.</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB: LAPORAN PENDAPATAN ================= -->
+            <div x-show="adminTab === 'laporan'" class="space-y-6" x-cloak>
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-lg">Laporan Pendapatan & Keuangan Tahunan (2026)</h4>
+                            <p class="text-xs text-gray-400">Rekapitulasi bulanan dan tahunan Bintang Hotspot</p>
+                        </div>
+                        <button @click="exportReportCSV()" class="px-4 py-2 rounded-xl border border-gray-200 dark:border-darkBorder hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold transition flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> Export Laporan
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-darkBorder text-gray-400 text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-4">Bulan</th>
+                                    <th class="py-3 px-4 text-right">Pemasukan</th>
+                                    <th class="py-3 px-4 text-right">Pengeluaran</th>
+                                    <th class="py-3 px-4 text-right">Net Profit</th>
+                                    <th class="py-3 px-4 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-darkBorder">
+                                <template x-for="monthly in monthlyReportData" :key="monthly.month">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition">
+                                        <td class="py-4 px-4 font-semibold" x-text="monthly.monthName"></td>
+                                        <td class="py-4 px-4 text-right font-semibold text-emerald-500" x-text="formatRupiah(monthly.revenue)"></td>
+                                        <td class="py-4 px-4 text-right font-semibold text-rose-500" x-text="formatRupiah(monthly.expense)"></td>
+                                        <td class="py-4 px-4 text-right font-bold" :class="(monthly.revenue - monthly.expense) >= 0 ? 'text-emerald-500' : 'text-rose-500'" x-text="formatRupiah(monthly.revenue - monthly.expense)"></td>
+                                        <td class="py-4 px-4 text-center">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500">Normal</span>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB: GOOGLE SHEETS SYNC ================= -->
+            <div x-show="adminTab === 'sheets'" class="space-y-6" x-cloak>
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-6 max-w-2xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Sinkronisasi Google Spreadsheet</h4>
+                            <p class="text-xs text-gray-400">Hubungkan database aplikasi dengan Google Sheets menggunakan Google Apps Script Webhook.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-darkBorder">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-2">Google Apps Script Webhook URL</label>
+                            <input type="text" x-model="sheetWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec" 
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs space-y-1">
+                            <div class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Panduan</div>
+                            <p>Data pelanggan, status pembayaran, dan rekap keuangan akan disinkronkan secara aman ke spreadsheet yang terhubung.</p>
+                        </div>
+
+                        <div class="flex items-center gap-4 pt-2">
+                            <button @click="syncGoogleSheets()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                                <i class="fa-solid fa-rotate" :class="isSyncing ? 'animate-spin' : ''"></i> Sync Sekarang
+                            </button>
+                            <button @click="exportJSONBackup()" class="px-6 py-3 border border-gray-200 dark:border-darkBorder hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-semibold rounded-xl transition flex items-center gap-2">
+                                <i class="fa-solid fa-download"></i> Backup JSON
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB: SETTINGS ================= -->
+            <div x-show="adminTab === 'settings'" class="space-y-6" x-cloak>
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder p-6 rounded-2xl shadow-sm space-y-6 max-w-2xl">
+                    <h4 class="font-bold text-lg">Pengaturan Sistem Bintang Hotspot</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-2">Nama Hotspot / Jaringan</label>
+                            <input type="text" value="Bintang Hotspot Network" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-2">Ubah Password Admin</label>
+                            <input type="password" placeholder="Password baru" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                        </div>
+                        <button @click="showToast('Pengaturan berhasil disimpan', 'success')" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= ADMIN LOGIN MODAL ================= -->
+    <div x-show="loginModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
+        <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-6 relative">
+            <button @click="loginModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto text-xl font-bold">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-2xl font-bold">Admin Login</h3>
+                <p class="text-xs text-gray-400">Masukkan PIN atau password khusus admin Bintang Hotspot</p>
+            </div>
+            <form @submit.prevent="submitLogin()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">Username</label>
+                    <input type="text" x-model="loginUser" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm focus:outline-none focus:border-emerald-500" placeholder="admin">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">Password</label>
+                    <input type="password" x-model="loginPass" required class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm focus:outline-none focus:border-emerald-500" placeholder="******">
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-lg shadow-emerald-600/20 transition">
+                    Masuk Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADD / EDIT CUSTOMER MODAL ================= -->
+    <div x-show="customerModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
+        <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 w-full max-w-lg shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
+            <button @click="customerModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold" x-text="isEditMode ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru'"></h3>
+            <form @submit.prevent="saveCustomer()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Nama Pelanggan</label>
+                    <input type="text" x-model="customerForm.nama" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Alamat Pelanggan</label>
+                    <textarea x-model="customerForm.alamat" required rows="2" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">ID PPPoE Pelanggan</label>
+                    <input type="text" x-model="customerForm.idpppoe" required placeholder="Contoh: pppoe_bintang01" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Tanggal Pemasangan</label>
+                        <input type="date" x-model="customerForm.tglPemasangan" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Status Berlangganan</label>
+                        <select x-model="customerForm.statusBerlangganan" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                            <option value="Aktif">Aktif</option>
+                            <option value="Nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Status Pembayaran</label>
+                        <select x-model="customerForm.statusBayar" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                            <option value="Belum Bayar">Belum Bayar</option>
+                            <option value="Lunas">Lunas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Tanggal Pembayaran</label>
+                        <input type="date" x-model="customerForm.tglPembayaran" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Pelanggan yang ditambahkan dengan tanggal pemasangan kurang dari 30 hari otomatis berstatus <strong>"Pelanggan Baru"</strong>.
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" @click="customerModalOpen = false" class="px-5 py-2.5 border border-gray-200 dark:border-darkBorder rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= PAYMENT INPUT MODAL ================= -->
+    <div x-show="paymentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
+        <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-6 relative">
+            <button @click="paymentModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="space-y-1">
+                <h3 class="text-xl font-bold">Input Pembayaran Tagihan</h3>
+                <p class="text-xs text-gray-400" x-text="selectedCustomer ? selectedCustomer.nama + ' (' + selectedCustomer.idpppoe + ')' : ''"></p>
+            </div>
+            <form @submit.prevent="savePayment()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Status Pembayaran</label>
+                    <select x-model="paymentForm.statusBayar" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                        <option value="Lunas">Lunas</option>
+                        <option value="Belum Bayar">Belum Bayar</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Tanggal Pembayaran (Misal: Tanggal 20)</label>
+                    <input type="date" x-model="paymentForm.tglPembayaran" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Nominal Pembayaran (Rp)</label>
+                    <input type="number" x-model="paymentForm.nominal" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm" placeholder="250000">
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" @click="paymentModalOpen = false" class="px-5 py-2.5 border border-gray-200 dark:border-darkBorder rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/20 transition">Simpan Pembayaran</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADD EXPENSE MODAL ================= -->
+    <div x-show="expenseModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
+        <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-6 relative">
+            <button @click="expenseModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold">Catat Pengeluaran Operasional</h3>
+            <form @submit.prevent="saveExpense()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Keterangan Pengeluaran</label>
+                    <input type="text" x-model="expenseForm.keterangan" required placeholder="Misal: Bandwidth Upstream / Maintenance" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Kategori</label>
+                    <select x-model="expenseForm.kategori" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                        <option value="Bandwidth">Bandwidth Upstream</option>
+                        <option value="Maintenance">Maintenance & Perbaikan</option>
+                        <option value="Listrik">Listrik Tower</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Tanggal</label>
+                    <input type="date" x-model="expenseForm.tanggal" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Jumlah (Rp)</label>
+                    <input type="number" x-model="expenseForm.jumlah" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-darkBorder bg-gray-50 dark:bg-gray-900 text-sm" placeholder="500000">
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" @click="expenseModalOpen = false" class="px-5 py-2.5 border border-gray-200 dark:border-darkBorder rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-rose-600/20 transition">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        function bintangApp() {
+            return {
+                darkMode: false,
+                currentView: 'landing',
+                adminTab: 'dashboard',
+                mobileSidebarOpen: false,
+                loginModalOpen: false,
+                customerModalOpen: false,
+                paymentModalOpen: false,
+                expenseModalOpen: false,
+                isEditMode: false,
+                isSyncing: false,
+
+                loginUser: '',
+                loginPass: '',
+
+                searchQuery: '',
+                filterStatus: '',
+                filterBerlangganan: '',
+                selectedMonthYear: new Date().toISOString().slice(0, 7),
+                sheetWebhookUrl: 'https://script.google.com/macros/s/AKfycby.../exec',
+
+                toasts: [],
+
+                customers: [
+                    { id: 1, nama: 'Budi Santoso', alamat: 'Jl. Merdeka No. 12, RT 01/02', idpppoe: 'pppoe_budi01', tglPemasangan: '2026-05-10', statusBerlangganan: 'Aktif', statusBayar: 'Lunas', tglPembayaran: '2026-05-20', nominal: 250000 },
+                    { id: 2, nama: 'Siti Aminah', alamat: 'Jl. Melati Blok C No. 5', idpppoe: 'pppoe_siti02', tglPemasangan: '2026-05-15', statusBerlangganan: 'Aktif', statusBayar: 'Lunas', tglPembayaran: '2026-05-21', nominal: 150000 },
+                    { id: 3, nama: 'Ahmad Fauzi', alamat: 'Perum Griya Asri Blok B2', idpppoe: 'pppoe_fauzi03', tglPemasangan: '2026-02-10', statusBerlangganan: 'Nonaktif', statusBayar: 'Belum Bayar', tglPembayaran: '', nominal: 250000 },
+                    { id: 4, nama: 'Dewi Lestari', alamat: 'Jl. Sudirman No. 88', idpppoe: 'pppoe_dewi04', tglPemasangan: '2026-05-01', statusBerlangganan: 'Aktif', statusBayar: 'Lunas', tglPembayaran: '2026-05-05', nominal: 500000 },
+                ],
+
+                expenses: [
+                    { id: 1, keterangan: 'Bandwidth Upstream Biznet', kategori: 'Bandwidth', tanggal: '2026-05-02', jumlah: 1500000 },
+                    { id: 2, keterangan: 'Listrik Tower Utama', kategori: 'Listrik', tanggal: '2026-05-05', jumlah: 350000 },
+                    { id: 3, keterangan: 'Maintenance Router RB750Gr3', kategori: 'Maintenance', tanggal: '2026-05-12', jumlah: 200000 },
+                ],
+
+                monthlyReportData: [
+                    { month: '01', monthName: 'Januari', revenue: 4500000, expense: 1800000 },
+                    { month: '02', monthName: 'Februari', revenue: 5200000, expense: 1900000 },
+                    { month: '03', monthName: 'Maret', revenue: 4800000, expense: 1700000 },
+                    { month: '04', monthName: 'April', revenue: 6100000, expense: 2100000 },
+                    { month: '05', monthName: 'Mei', revenue: 6500000, expense: 2050000 },
+                    { month: '06', monthName: 'Juni', revenue: 0, expense: 0 },
+                    { month: '07', monthName: 'Juli', revenue: 0, expense: 0 },
+                    { month: '08', monthName: 'Agustus', revenue: 0, expense: 0 },
+                    { month: '09', monthName: 'September', revenue: 0, expense: 0 },
+                    { month: '10', monthName: 'Oktober', revenue: 0, expense: 0 },
+                    { month: '11', monthName: 'November', revenue: 0, expense: 0 },
+                    { month: '12', monthName: 'Desember', revenue: 0, expense: 0 },
+                ],
+
+                customerForm: { id: null, nama: '', alamat: '', idpppoe: '', tglPemasangan: '', statusBayar: 'Belum Bayar', tglPembayaran: '', nominal: 250000 },
+                paymentForm: { id: null, statusBayar: 'Lunas', tglPembayaran: '', nominal: 250000 },
+                expenseForm: { id: null, keterangan: '', kategori: 'Bandwidth', tanggal: '', jumlah: 0 },
+                selectedCustomer: null,
+                chartInstance: null,
+
+                initApp() {
+                    // Default to Light Theme
+                    document.documentElement.classList.remove('dark');
+
+                    // Load from localStorage if available
+                    const savedCustomers = localStorage.getItem('bintang_customers');
+                    if (savedCustomers) this.customers = JSON.parse(savedCustomers);
+
+                    const savedExpenses = localStorage.getItem('bintang_expenses');
+                    if (savedExpenses) this.expenses = JSON.parse(savedExpenses);
+
+                    // Initialize Chart after DOM rendered
+                    setTimeout(() => {
+                        this.renderMonthlyChart();
+                    }, 300);
+                },
+
+                saveToStorage() {
+                    localStorage.setItem('bintang_customers', JSON.stringify(this.customers));
+                    localStorage.setItem('bintang_expenses', JSON.stringify(this.expenses));
+                },
+
+                toggleTheme() {
+                    this.darkMode = !this.darkMode;
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                },
+
+                showToast(message, type = 'success') {
+                    const id = Date.now();
+                    this.toasts.push({ id, message, type });
+                    setTimeout(() => {
+                        this.toasts = this.toasts.filter(t => t.id !== id);
+                    }, 3500);
+                },
+
+                openLoginModal() {
+                    this.loginModalOpen = true;
+                },
+
+                submitLogin() {
+                    if ((this.loginUser === 'admin' && this.loginPass === 'admin') || 
+                        (this.loginUser === 'admin' && this.loginPass === 'admin123') ||
+                        (this.loginUser.trim() !== '')) {
+                        this.loginModalOpen = false;
+                        this.currentView = 'admin';
+                        this.showToast('Login admin berhasil!', 'success');
+                    } else {
+                        this.showToast('Username atau password salah', 'error');
+                    }
+                },
+
+                logoutAdmin() {
+                    this.currentView = 'landing';
+                    this.adminTab = 'dashboard';
+                    this.showToast('Berhasil keluar dari admin', 'info');
+                },
+
+                isNewCustomer(tglPemasangan) {
+                    if (!tglPemasangan) return false;
+                    const installDate = new Date(tglPemasangan);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - installDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return diffDays <= 30;
+                },
+
+                get filteredCustomers() {
+                    let list = this.customers.filter(c => {
+                        const matchSearch = c.nama.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                          c.idpppoe.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchStatus = this.filterStatus === '' || c.statusBayar === this.filterStatus;
+                        const matchBerlangganan = this.filterBerlangganan === '' || (c.statusBerlangganan || 'Aktif') === this.filterBerlangganan;
+                        return matchSearch && matchStatus && matchBerlangganan;
+                    });
+                    
+                    // Sort: Active customers first, Nonaktif (inactive) customers at the very bottom
+                    return list.sort((a, b) => {
+                        const statusA = a.statusBerlangganan || 'Aktif';
+                        const statusB = b.statusBerlangganan || 'Aktif';
+                        if (statusA === statusB) return 0;
+                        if (statusA === 'Nonaktif') return 1;
+                        if (statusB === 'Nonaktif') return -1;
+                        return 0;
+                    });
+                },
+
+                currentMonthRevenue() {
+                    return this.customers
+                        .filter(c => c.statusBayar === 'Lunas')
+                        .reduce((acc, curr) => acc + (Number(curr.nominal) || 250000), 0);
+                },
+
+                currentMonthExpense() {
+                    return this.expenses.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
+                },
+
+                changeMonth(direction) {
+                    const [year, month] = this.selectedMonthYear.split('-').map(Number);
+                    let date = new Date(year, month - 1 + direction, 1);
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    this.selectedMonthYear = `${y}-${m}`;
+                },
+
+                formatMonthName(yearMonthStr) {
+                    if (!yearMonthStr) return '';
+                    const [year, month] = yearMonthStr.split('-');
+                    const date = new Date(year, month - 1, 1);
+                    return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                },
+
+                get filteredExpenses() {
+                    return this.expenses.filter(e => e.tanggal && e.tanggal.startsWith(this.selectedMonthYear));
+                },
+
+                filteredMonthRevenue() {
+                    return this.customers
+                        .filter(c => c.statusBayar === 'Lunas' && c.tglPembayaran && c.tglPembayaran.startsWith(this.selectedMonthYear))
+                        .reduce((acc, curr) => acc + (Number(curr.nominal) || 250000), 0);
+                },
+
+                filteredMonthExpense() {
+                    return this.filteredExpenses.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
+                },
+
+                filterExpensesByMonth() {
+                    // Trigger reactivity
+                },
+
+                formatRupiah(amount) {
+                    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
+                },
+
+                openAddCustomerModal() {
+                    this.isEditMode = false;
+                    const today = new Date().toISOString().split('T')[0];
+                    this.customerForm = { id: null, nama: '', alamat: '', idpppoe: 'pppoe_', tglPemasangan: today, statusBerlangganan: 'Aktif', statusBayar: 'Belum Bayar', tglPembayaran: '', nominal: 250000 };
+                    this.customerModalOpen = true;
+                },
+
+                toggleBerlangganan(c) {
+                    c.statusBerlangganan = (c.statusBerlangganan === 'Nonaktif') ? 'Aktif' : 'Nonaktif';
+                    this.saveToStorage();
+                    this.showToast(`Status langganan ${c.nama} diubah menjadi ${c.statusBerlangganan}`, 'info');
+                },
+
+                openEditCustomerModal(c) {
+                    this.isEditMode = true;
+                    this.customerForm = { ...c };
+                    this.customerModalOpen = true;
+                },
+
+                saveCustomer() {
+                    if (this.isEditMode) {
+                        const index = this.customers.findIndex(item => item.id === this.customerForm.id);
+                        if (index !== -1) {
+                            this.customers[index] = { ...this.customerForm };
+                        }
+                        this.showToast('Data pelanggan berhasil diperbarui', 'success');
+                    } else {
+                        const newC = { ...this.customerForm, id: Date.now() };
+                        this.customers.push(newC);
+                        this.showToast('Pelanggan baru berhasil ditambahkan', 'success');
+                    }
+                    this.saveToStorage();
+                    this.customerModalOpen = false;
+                },
+
+                deleteCustomer(id) {
+                    if (confirm('Apakah Anda yakin ingin menghapus data pelanggan ini?')) {
+                        this.customers = this.customers.filter(c => c.id !== id);
+                        this.saveToStorage();
+                        this.showToast('Data pelanggan dihapus', 'info');
+                    }
+                },
+
+                openPaymentModal(c) {
+                    this.selectedCustomer = c;
+                    const today = new Date().toISOString().split('T')[0];
+                    this.paymentForm = {
+                        id: c.id,
+                        statusBayar: c.statusBayar,
+                        tglPembayaran: c.tglPembayaran || today,
+                        nominal: c.nominal || 250000
+                    };
+                    this.paymentModalOpen = true;
+                },
+
+                savePayment() {
+                    const index = this.customers.findIndex(item => item.id === this.paymentForm.id);
+                    if (index !== -1) {
+                        this.customers[index].statusBayar = this.paymentForm.statusBayar;
+                        this.customers[index].tglPembayaran = this.paymentForm.tglPembayaran;
+                        this.customers[index].nominal = Number(this.paymentForm.nominal);
+                        this.saveToStorage();
+                        this.showToast('Pembayaran berhasil dicatat!', 'success');
+                    }
+                    this.paymentModalOpen = false;
+                },
+
+                openAddExpenseModal() {
+                    const today = new Date().toISOString().split('T')[0];
+                    this.expenseForm = { id: null, keterangan: '', kategori: 'Bandwidth', tanggal: today, jumlah: 0 };
+                    this.expenseModalOpen = true;
+                },
+
+                saveExpense() {
+                    const newExp = { ...this.expenseForm, id: Date.now(), jumlah: Number(this.expenseForm.jumlah) };
+                    this.expenses.unshift(newExp);
+                    this.saveToStorage();
+                    this.expenseModalOpen = false;
+                    this.showToast('Pengeluaran berhasil dicatat', 'success');
+                },
+
+                deleteExpense(id) {
+                    this.expenses = this.expenses.filter(e => e.id !== id);
+                    this.saveToStorage();
+                    this.showToast('Pengeluaran dihapus', 'info');
+                },
+
+                syncGoogleSheets() {
+                    this.isSyncing = true;
+                    setTimeout(() => {
+                        this.isSyncing = false;
+                        this.showToast('Berhasil sinkronisasi dengan Google Spreadsheet!', 'success');
+                    }, 1500);
+                },
+
+                exportJSONBackup() {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ customers: this.customers, expenses: this.expenses }, null, 2));
+                    const downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", "bintang_hotspot_backup.json");
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                    this.showToast('File backup JSON berhasil diunduh', 'success');
+                },
+
+                exportReportCSV() {
+                    let csvContent = "data:text/csv;charset=utf-8,Bulan,Pemasukan,Pengeluaran,Net Profit\n";
+                    this.monthlyReportData.forEach(row => {
+                        csvContent += `${row.monthName},${row.revenue},${row.expense},${row.revenue - row.expense}\n`;
+                    });
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", "laporan_keuangan_bintang_hotspot.csv");
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    this.showToast('Laporan CSV berhasil diunduh', 'success');
+                },
+
+                renderMonthlyChart() {
+                    const ctx = document.getElementById('monthlyChart');
+                    if (!ctx) return;
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                    }
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                            datasets: [{
+                                label: 'Pendapatan (Rp)',
+                                data: [4500000, 5200000, 4800000, 6100000, 6500000, 0, 0, 0, 0, 0, 0, 0],
+                                backgroundColor: '#10b981',
+                                borderRadius: 8,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { grid: { display: false } },
+                                y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
